@@ -1,0 +1,25 @@
+version: '3.9'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Your_password123
+    ports: ["1433:1433"]
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: ["5672:5672", "15672:15672"]
+  api:
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Default=Server=sqlserver;Database=SupportTriage;User Id=sa;Password=Your_password123;TrustServerCertificate=true
+      - Redis__ConnectionString=redis:6379
+      - Ai__Provider=Mock
+    depends_on: [sqlserver, redis]
+    ports: ["8080:8080"]
